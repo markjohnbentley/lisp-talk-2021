@@ -134,47 +134,88 @@
        (K 15)
        (sigma 0.2)
        (maturity 5)
-       (option-instance (make-instance 'european-call :risk-free r
-						      :strike K
-						      :S-0 S-0
-						      :sigma sigma
-						      :maturity maturity))
-       (simulated (simulate-call-price option-instance 10000 100))
+       (call (make-instance 'european-call :risk-free r
+					   :strike K
+					   :S-0 S-0
+					   :sigma sigma
+					   :maturity maturity))
+       (simulated (simulate-call-price call 10000 100))
        (exact (black-scholes-call S-0 r sigma maturity K)))
   (format t "Simulated is ~a, exact is ~a ~%" simulated exact))
   
 ;;; Methods for a digital no-touch type option
 
-(defclass digital-no-touch (option)
+(defclass no-touch-call (european-call)
   ((lower
     :initarg :lower)
    (upper
     :initarg :upper)))
 
-(defmethod discounted-payoff ((option digital-no-touch) path)
+(defmethod discounted-payoff ((option no-touch-call) path)
   "It's 1 if it stays in the bounds"
   (with-slots (lower upper) option
     (let ((stays-above (every (lambda (x) (> x lower)) path))
 	  (stays-below (every (lambda (x) (< x upper)) path)))
-      (if (and stays-above stays-below) 1 0))))
+      (* (if (and stays-above stays-below) 1 0)
+	 (call-next-method))))) ; This is the key bit
 
 (let* ((S-0 20)
        (r 0.01)
+       (K 15)
        (sigma 0.2)
        (maturity 5)
-       (option-instance (make-instance 'digital-no-touch :risk-free r
-							 ;; :strike K
-							 :S-0 S-0
-							 :sigma sigma
-							 :maturity maturity
-							 :lower 10
-							 :upper 30))
-       (simulated (simulate-call-price option-instance 10000 100)))
-  (format t "Simulated is ~a ~%" simulated))
+       (lower 10.0)
+       (upper 30.0)
+       (call (make-instance 'european-call :risk-free r
+					   :strike K
+					   :S-0 S-0
+					   :sigma sigma
+					   :maturity maturity))
+       (simulated-call (simulate-call-price call 10000 100))       
+       (exact (black-scholes-call S-0 r sigma maturity K))
+       (no-touch-call (make-instance 'no-touch-call :risk-free r
+						    :strike K
+						    :S-0 S-0
+						    :sigma sigma
+						    :maturity maturity
+						    :lower lower
+						    :upper upper))
+       (simulated-no-touch-call (simulate-call-price no-touch-call 10000 100)))
+  (format t "Call: Simulated is ~a, exact is ~a ~%" simulated-call exact)
+  (format t "No Touch Call: Simulated is ~a ~%" simulated-no-touch-call))
+
+;;; multimethods: basic idea
+
+(defclass drum () ())
+(defclass snare (drum) ())
+(defclass cymbals (drum) ())
+
+(defclass drumstick () ())
+(defclass wooden-drumstick (drumstick) ())
+(defclass mallet (drumstick) ())
+
+(defgeneric play (drum drumstick))
+
+(defmethod play ((drum snare) (drumstick wooden-drumstick)) "Rata-tat-tat")
+(defmethod play ((drum snare) (drumstick mallet)) "I think I broke it")
+(defmethod play ((drum cymbals) (drumstick wooden-drumstick)) "tssss")
+(defmethod play ((drum cymbals) (drumstick mallet)) "TSSSS")
+
+(let ((snare (make-instance 'snare))
+      (cymbals (make-instance 'cymbals))
+      (wooden-drumstick (make-instance 'wooden-drumstick))
+      (mallet (make-instance 'mallet)))
+  (list (play snare wooden-drumstick)
+	(play snare mallet)
+	(play cymbals wooden-drumstick)
+	(play cymbals mallet)))
 
 
 
-  
+
+
+
+   
 
 
 
