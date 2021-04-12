@@ -1,0 +1,190 @@
+;;;; Looking at mixins in the context of a European Barrier Option
+;;;;
+;;;; Mark Bentley, 2021
+
+;;; Code to simulate a path
+
+(defun uniform (&optional (N 1e9))
+  "Gives approximate U(0,1) random variate"
+  (/ (random N)
+     N))
+
+(defun box-muller ()
+  "Returns an independent pair of N(0,1)'s"
+  (let* ((u-1 (uniform))
+	 (u-2 (uniform))
+	 (fact (sqrt (* (- 2) (log u-1))))
+	 (arg (* 2 PI u-2)))
+    (values (* fact (cos arg))
+	    (* fact (sin arg)))))
+
+(defun box-mullers (N)
+  "Gets N N(0,1)'s - assuming N is even"
+  (loop for i from 1 to (floor (/ N 2)) appending (multiple-value-list (box-muller))))
+
+(defun save-numbers (x filename)
+  "Saves some numbers to a file."
+  (with-open-file (stream filename :direction :output
+					    :if-exists :overwrite
+					    :if-does-not-exist :create)
+    (format stream "~{~f,~% ~}" x)))
+
+(defun gbm-step (r sigma dt S Z)
+  "Returns an increment of GBM"
+  (* S
+     (exp (+ (* (- r (* 0.5 sigma sigma)) dt)
+	     (* sigma (sqrt dt) Z)))))
+
+(defun gbm (r sigma maturity steps S &optional (i 0) (path nil) (Z nil) (dt nil))
+  "Simulates a path of Geometric Brownian Motion"
+  (cond ((= i steps) (reverse path))
+	((null path) (let* ((dt (/ maturity steps))
+			    (Z (box-mullers steps))
+			    (step (gbm-step r sigma dt S (nth i Z))))
+		       (gbm r sigma maturity steps step (1+ i) (push step path) Z dt)))
+	(T (let ((step (gbm-step r sigma dt S (nth i Z))))
+	     (gbm r sigma maturity steps step (1+ i) (push step path) Z dt)))))
+	
+(defun save-gbm-path (r sigma maturity steps S)
+  (with-open-file (stream "cat.csv" :direction :output
+  				    :if-exists :overwrite
+  				    :if-does-not-exist :create)
+    (let ((path (gbm r sigma maturity steps S))
+	  (dt (/ maturity steps)))
+      (loop for i from 1 to steps do
+	(format stream "~F, ~F ~%" (* i dt) (nth i path))))))
+
+;;; Code for B-S formula
+
+(defun rough-integrate (f a b N)
+  "Integrates f from a to b using N steps - roughly."
+  (let ((dx (float (/ (- b a) N))))
+    (loop for n from 1 to N summing (* (funcall f (+ a (* n dx))) dx))))
+
+(defun Phi (x &optional (N 1e5))
+  "A dodgy standard normal integral"
+  (let ((low-enough -6))
+    (rough-integrate (lambda (x) (* (/ 1 (sqrt (* 2 PI)))
+				    (exp (- (* 0.5 x x)))))
+		     (if (< x low-enough) (+ x low-enough) low-enough)
+		     x N)))
+
+(defun black-scholes-call (S-0 r sigma maturity K)
+  "Returns the value of a Black-Scholes call"
+  (let* ((sigma-sqrt-T (* sigma (sqrt maturity)))
+	 (d1 (* (/ 1 sigma-sqrt-T)
+		(+ (log (/ S-0 K))
+		   (* (+ r (/ (* sigma sigma) 2)) maturity))))
+	 (d2 (- d1 sigma-sqrt-T))
+	 (df (exp (* (- r) maturity))))
+    (- (* S-0 (Phi d1))
+       (* K df (Phi d2)))))
+
+;;; A generic function that will take in a payoff object (or payoff objects)
+
+(defgeneric discounted-payoff (option path)
+  (:documentation "Returns a payoff"))
+
+;;; A class representing an option and a European option
+
+(defclass option ()
+  ((risk-free
+    :initarg :risk-free)
+   (maturity
+    :initarg :maturity)
+   (S-0
+    :initarg :S-0)
+   (sigma
+    :initarg :sigma)))
+
+(defclass european-call (option)
+  ((strike
+    :initarg :strike)))
+
+;; (make-instance 'european-call :risk-free 0.01 :maturity 1 :strike 10 :S-0 20 :sigma 0.2)
+
+(defmethod discounted-payoff ((option european-call) path)
+  "European Call Payoff"
+  (with-slots (risk-free maturity strike) option
+    (let ((S-T (first (last path)))
+	  (df (exp (* (- risk-free) maturity))))
+      (* df (max 0 (- S-T strike))))))
+
+(defun calculate-average (x)
+  "Calculates average"  
+  (save-numbers x "blerg.csv")
+  (float (/ (apply #'+ x)
+	    (length x))))
+
+(defun get-several-payoffs (option number-of-paths steps)
+  "Get several paths"
+  (with-slots (risk-free maturity sigma S-0) option
+    (let ((payoffs (loop for m from 1 to number-of-paths
+			 collecting
+			 (discounted-payoff option (gbm risk-free sigma maturity steps S-0)))))
+      payoffs)))
+
+(defun simulate-call-price (option number-of-paths steps)
+  "Simulates a bunch of paths, then finds the discounted payoff. "
+  (let* ((payoffs (get-several-payoffs option number-of-paths steps)))
+    (calculate-average payoffs)))
+
+(let* ((S-0 20)
+       (r 0.01)
+       (K 15)
+       (sigma 0.2)
+       (maturity 5)
+       (option-instance (make-instance 'european-call :risk-free r
+						      :strike K
+						      :S-0 S-0
+						      :sigma sigma
+						      :maturity maturity))
+       (simulated (simulate-call-price option-instance 10000 100))
+       (exact (black-scholes-call S-0 r sigma maturity K)))
+  (format t "Simulated is ~a, exact is ~a ~%" simulated exact))
+  
+;;; Methods for a digital no-touch type option
+
+(defclass digital-no-touch (option)
+  ((lower
+    :initarg :lower)
+   (upper
+    :initarg :upper)))
+
+(defmethod discounted-payoff ((option digital-no-touch) path)
+  "It's 1 if it stays in the bounds"
+  (with-slots (lower upper) option
+    (let ((stays-above (every (lambda (x) (> x lower)) path))
+	  (stays-below (every (lambda (x) (< x upper)) path)))
+      (if (and stays-above stays-below) 1 0))))
+
+(let* ((S-0 20)
+       (r 0.01)
+       (sigma 0.2)
+       (maturity 5)
+       (option-instance (make-instance 'digital-no-touch :risk-free r
+							 ;; :strike K
+							 :S-0 S-0
+							 :sigma sigma
+							 :maturity maturity
+							 :lower 10
+							 :upper 30))
+       (simulated (simulate-call-price option-instance 10000 100)))
+  (format t "Simulated is ~a ~%" simulated))
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
