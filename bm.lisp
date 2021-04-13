@@ -214,7 +214,7 @@
 
 ;;; Simple profiling
 
-(time (run-second-example))
+;; (time (run-second-example))
 
 ;;; Deterministic profiling
 
