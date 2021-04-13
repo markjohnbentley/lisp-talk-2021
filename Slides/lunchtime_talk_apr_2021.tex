@@ -1,0 +1,310 @@
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\title{Common Lisp: An Old Dog with New Tricks}
+\author{Mark Bentley}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Pittsburgh, 1995}
+  \begin{itemize}
+    \pause
+  \item \emph{Unskilled and Unaware of It: How Difficulties in
+    Recognizing One's Own Incompetence Lead to Inflated
+    Self-Assessments} - Justin Kruger \& David Dunning 
+    \pause
+  \item Admission cost: good to have a phrase for that!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why DK?}
+  \pause
+  Lisp advocates can be smug:
+  
+  \begin{itemize}       
+    
+    \pause
+    
+  \item \emph{The greatest single programming language ever designed.}
+    - Alan Kay
+    
+    \pause
+    
+  \item \emph{... occupies some kind of local optimum in the space of
+    programming languages...} - John McCarthy
+    
+    \pause
+
+  \item \emph{The Largest Disservice to LISP is most frequently done
+    whenever a LISP advocate opens his/her mouth. LISP advocates have
+    been, in my limited and biased experience, some of the most
+    arrogant and condescending bastards in the world. They think that
+    LISP is God's gift to everything and that anyone who doesn't know
+    it is an ignorant dolt.} - A user on slashdot
+    
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Key Point}
+
+  \pause
+  \begin{itemize}
+  \item Incremental programming is \textbf{a good thing}.
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{History}
+\begin{frame}{History - James Maxwell}
+  \begin{center}
+    \includegraphics[scale=0.6]{images/maxwell}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - Maxwell's Equations}
+  \begin{center}
+    \includegraphics[width=\textwidth]{images/maxwells-equations}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - John McCarthy}
+  \begin{center}
+    \includegraphics[width=\textwidth]{images/mccarthy}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - Maxwell's Equations of Software}
+  \begin{center}
+    \includegraphics[width=\textwidth]{images/eval}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - Fracturing}
+  \begin{center}
+    \includegraphics[width=\textwidth]{images/lisp-timeline}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - ANSI Common Lisp}
+  \begin{center}
+    \includegraphics[scale=0.5]{images/common-lisp-book}
+  \end{center}
+\end{frame}
+
+\begin{frame}{History - ANSI Common Lisp{\bf \color{red}s}}
+  \begin{center}
+    \includegraphics[scale=0.25]{images/many-lisps}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}{History - Where's my interest from?}
+  \begin{center}
+    \includegraphics[scale=5.5]{images/lisp-cycles}
+  \end{center}
+\end{frame}
+
+\section{Getting Started}
+\begin{frame}{Getting Started}
+\end{frame}
+
+\begin{frame}{Getting Started - Covered}
+  \begin{itemize}
+  \item Emacs
+  \item Slime
+  \item Prefix Notation
+  \item Atoms and lists: expressions
+  \item {\color{red} Alien but simple syntax}
+  \end{itemize}
+\end{frame}
+
+\section{Incremental Development}
+\begin{frame}{Incremental Development}
+\end{frame}
+
+\begin{frame}{Incremental Development - Covered}
+  \begin{itemize}
+  \item Functions are lists
+  \item Functions can be recursive
+  \item Lisp is interpreted \textbf{and} compiled: compiled at the function level!
+  \item Slime is neat: can navigate to language definitions easily
+  \end{itemize}
+\end{frame}
+
+\section{Encapsulation}
+\begin{frame}{Encapsulation}
+\end{frame}
+
+\begin{frame}{Encapsulation - Covered}
+  \begin{itemize}
+  \item Can use e.g. lexical closures
+  \item Packages export symbols (like a namespace). But no enforced
+    hiding.
+  \item ASDF for something like a makefile (compile, load order, dependencies).
+  \end{itemize}
+\end{frame}
+
+\section{Object Re-Orientation}
+\begin{frame}{Object Re-Orientation}
+  \begin{itemize}
+    \pause
+  \item C++ / Python: object oriented programming must involve encapsulation.
+    \pause
+  \item Common Lisp: object oriented programming = abstract data types (objects) acted on by functions.
+    \pause
+  \item \textbf{Message Passing} vs \textbf{Generic Functions}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Message Passing (C++ / Python)}
+  \begin{itemize}
+    \pause
+  \item Write a class that defines an object a. The class ``owns'' the function / method f.
+    \pause
+  \item a.f(x): \emph{Dear a, please tell f to do something to x}.
+    \pause
+  \item Put another way, f(x; a).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Generic Functions / CLOS}
+  \begin{itemize}
+    \pause
+  \item Write a class that defines an object a.
+    \pause    
+  \item \textbf{Independently}, define methods / functions that act upon objects a (or a and b).
+    \pause    
+  \item f(x; a): \emph{Dear function, do something to x based on what you know about a}.
+    \pause
+  \item f(x; a, b): \emph{Dear function, do something to x based on what you know about objects a and b}.
+    \pause
+  \item Common Lisp is truly object oriented: every thing belongs to a class.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{CLOS Demo}
+\end{frame}
+
+\begin{frame}{CLOS Demo - Covered}
+  \begin{itemize}
+  \item CLOS 
+  \item
+  \item 
+  \end{itemize}
+\end{frame}
+
+\section{Nifty Tools}
+\begin{frame}{Nifty Tools}
+  \begin{itemize}  
+  \item Common Lisp has a great ``ecosystem'' defined in the standard
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Nifty Tools - Covered}
+  \begin{itemize}
+    \pause    
+  \item Tracing
+    \pause      
+  \item Recompiling a function in a debugger
+    \pause      
+  \item Recompiling and reinstantiating objects in a debugger
+    \pause    
+  \item Carpentry vs Teaching
+    \pause    
+  \item Profiling
+    \pause    
+  \item Type Declarations
+  \end{itemize}
+\end{frame}
+
+\section{Why Common Lisp Cannot Die}
+\begin{frame}{Why Common Lisp Cannot Die}
+  \begin{itemize}
+    \pause
+  \item Macros
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Under the Hood - Non-Lisp}
+  \begin{center}
+    \includegraphics[scale=0.4]{images/non-lisp-eval}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Under the Hood - Programs as Trees}
+  \begin{center}
+    \includegraphics[scale=0.4]{images/trees}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Under the Hood - Lisp}
+  \begin{center}
+    \includegraphics[scale=0.4]{images/lisp-eval}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Why Common Lisp Cannot Die - Covered}
+  \begin{itemize}
+    \pause
+  \item New control structures
+    \pause
+  \item Creating new domain specific languages
+    \pause
+  \item Compile time computation
+    \pause
+  \item Unchanged since 1994
+    \pause
+  \item CLOS implemented through macros
+  \end{itemize}
+\end{frame}
+
+\section{Conclusion - Drawing Owls}
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \pause
+  \item Emacs rules
+    \pause
+  \item Lisp is old and elegant. Advocates are highly partisan.
+    \pause
+  \item Syntax is odd, but simple. 
+    \pause    
+  \item Generic Functions vs Message Passing (+ Encapsulation).
+    \pause    
+  \item Recompiling (and reinstantiating) on the fly.
+    \pause
+  \item Profiling + typing
+    \pause
+  \item Macros
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Key, Useful, Takeaway Point - Interactive Development}
+  \begin{itemize}
+    \pause
+  \item Hadley Wickham Appreciation Society - You have the power!
+    \pause    
+  \item Pythonistas: chunks in Spyder? PyCharm?
+    \pause
+  \item C++/C\#-ers: TDD?
+  \end{itemize}
+    
+\end{frame}
+
+\begin{frame}{Conclusion - Drawing Owls}
+  \pause
+  \begin{center}
+    \includegraphics[scale=0.6]{images/owl_in_two_steps}
+  \end{center}
+  \pause  
+  Thank you for your time and attention  
+\end{frame}
+
+\end{document}

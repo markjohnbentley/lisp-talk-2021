@@ -1,0 +1,404 @@
+Grab
+
+** Dunning-Kruger
+
+NEED TO MEMORISE THE FIRST THREE SENTENCES
+
+Good to have a phrase for that 
+
+** Smugness
+
+Lispers can be smug
+I aim not to be arrogant and condescending
+
+** The Point
+
+As on the page
+
+* History
+
+** James Maxwell - Picture
+
+James Maxwell - 19th Century Scottish Scientist
+Goes Newton, Maxwell, Einstein et al
+Lisp isn't that old
+
+** Maxwell's Equations
+
+Maxwell is famous for his set of four equations in two forms
+They unify electric and magnetic phenomena: 
+Light
+Radios
+Electric Circuits
+
+** John McCarthy - Picture
+
+Disturbs me that I have that jumper
+Invented the term "Artificial Intelligence"
+Invented Lisp in 1958 (one year after FORTRAN)
+Interested in a symbolic computer language - differentiation, basic logic
+
+** Maxwell's Equations of Software
+
+Half page of pseudo code = a consistent basis for computation
+We won't be going through this, but while it looks unimpenetrable, but it is surprisingly simple
+How to evaluate expressions based on seven basic operations
+Quote and Atom are the important ones
+Came up with this boiled down language *before* it was implemented (had bugs!)
+
+** Fracturing
+
+Simple basis = different dialects
+Hasn't stopped
+Clojure - sits on top of the JVM
+Hy - sits on top of python
+Lisp was hot - Lisp Machines were built
+Various introductions - e.g. if/else and garbage collection
+
+** CLTL
+
+ARPA (Advanced Research Projects Agency) supported AI research but got sick of the fracturing
+1981: 33 odd interested parties got together
+What to call this "Common Lisp"?
+Internicine politics
+1984: CLTL 1e 
+1990: CLTL 2e
+1994: ANSI Common Lisp 
+Maybe worried about time. Don't be - that's it. Common Lisp is complete.
+Great feature - python2 to python3 print, VS2017 to VS2019? CL from 1994 still works unabridged.
+
+** Common Lisps
+
+Anyone can make an ANSI compliant Lisp
+It's a big language though
+What's the point of different types? Different niches?
+Two Commercial ones
+Sitting on Java
+Sitting on C
+Fast numerical
+Choose SBCL
+
+** My path to Lisp
+
+A personal one
+
+
+* Getting Started
+
+Let's dive in! 
+
+** Emacs
+
+Text editor from the 1970s: enemy of Vi / Vim
+Can extend it with Emacs Lisp
+Good example - git
+Don't need to use the keyboard
+Chorded vs modal
+
+** Slime
+
+What does Slime mean?
+SBCL is "sitting under" the terminal
+There's a great number of commands available with shortcuts
+
+** Prefix Notation
+
+We are in the REPL
+Compare with python and R: x = 1, x + 1
+Lisp dies?! 
+Lisp uses prefix notation
+Like the English sentence "Add 1 2 and 3"
+Lisp expects expressions which are then evaluated
+Can nest expressions: goes left to right
+Looks complex? Very, very simple syntax! Everything is an atom or a list. 
+Hello world in C++: statements are executed, expressions are evaluated. More complex syntax.
+Lisp is a symbolic programming language
+Different data types:
+
+  bignums - no overflows!
+  ratios - exact arithmetic
+  vectors
+  hashtables
+  multidimensional arrays
+  symbols! not commonly found elsewhere
+
+Things are atoms or lists
+1 is an atom
+"hat" is an atom
+'a is an atom
+The last one is interesting because it is a symbol
+Can tell lisp to *not* evaluate with quote: 'a vs a
+Lists are surrounded by parentheses
+listp (p for predicate (true or false)) tests whether something is a list
+Lisp will take the first element of an unquoted list as a function call (1 2 3)
+list is function that will take elements and return a list of those elements 
+Example of quote function (list '(+ 1 2) (+ 1 2))
+
+Lisp programs consist of lists + Lisp can muck around with lisps = Lisp programs can generate Lisp code
+
+* Incremental Development
+
+Hello world:
+
+(defun hello-world (x)
+  (format t "~s ~%" x))
+
+What is that? It's a list of four things: two symbols, a list of a
+symbol and a list giving an expression. The functino returns the last
+thing it evaluates (in this case NIL).
+
+Side note: format is really interesting:
+
+(format t "~{~a~^, ~}" '(1 2 3 4))
+(format t "~R ~%" (expt 3 100))
+
+Symbolic computing:
+
+(defun add (x y)
+  "Synonym for car - what's that?!"
+  (cons x y))
+
+(defun reverse-list (x &optional (return-list nil))
+  "Reverses a list"
+  (if (null x)
+      return-list
+      (reverse-list (rest x) (add (first x) return-list))))
+
+This is lispy style to use recursion instead of a loop, but it's not
+strictly functional. See e.g. loop DSL for iteration:
+
+(loop for i from 1 to 10 do (format t "~s ~%" i))
+(loop for i from 1 to 10 collect i)
+(loop for i from 1 to 10 summing i)
+
+So you absolutely can do procedural style. Back to the point.
+
+(reverse-list '(1 2 3))
+
+(defvar c 8)
+
+(reverse-list '(a b c))
+
+(reverse-list `(a b ,c))
+
+It will reverse things that don't exist!
+
+Evaluating + Compiling / Interactive Development:
+
+C-M-x evaluates a function: equivalent to copy pasting to repl.
+
+C-c C-k compiles a whole file.
+
+C-c C-c compiles a single function.
+
+Incremental development: switching between code and running REPL
+
+M-. for random: side note I found how to do uniforms properly
+
+M-, to return
+
+C-c C-d h for hyperspec
+
+Why do you care? This style of coding is available for R. See
+e.g. ESS; everything I'm doing is available in RStudio. Except for the
+compilation.
+
+Will come back to this point.
+
+* Encapsulation
+
+Not huge on hiding things. Nothing is declared private.
+
+Can use lexical closures:
+
+(let ((x 0))
+  (defun counter ()
+    (setf x (+ x 1))))
+
+Can we change x? No.
+
+Otherwise namespaces are implemented by packages which export some
+symbols (but allow for all symbols to be accessed). 
+
+Can create stand alone executables.
+
+* Object Reorientation
+
+As in slides
+
+What does everything is a class mean?
+
+(class-of 2)
+
+(class-of "cat")
+
+M-. on built-in-class and then defclass
+
+****NEED MORE NOTES****
+
+* Nifty Tricks
+
+** Tracing
+
+C-c M-t, then (factorial 20) (say)
+
+Then C-T, G
+
+Then click various things
+
+** The Condition System + Debugging
+
+Two extremes: let failures sail on through (bad: dead programs tell no
+lies!), explode on any error. How do we handle errors? Exceptions.
+
+Common Lisp sits nicely in the middle and uses conditions. **DK!**
+
+Need to declare to the compiler that it should focus on debugging
+
+(declaim (optimize (debug 3))): needs to be evaluated, not compiled
+
+(defun factorial (n)
+ "Calculates n!"
+  (if (= n 0)
+      (/ 1 0) ; probably
+      (* n (factorial (- n 1)))))
+
+Then compile (buggy) factorial - M-n to go to the next note from the compiler
+
+Then run the (wrong code) with 3. It crashes. Modify factorial to:
+
+(defun factorial (n)
+ "Calculates n!"
+  (break)
+  (if (= n 0)
+      (/ 1 0) ; probably
+      (* n (factorial (- n 1)))))
+
+Recompile with C-c C-c, emphasise that it's being recompiled from
+within the compiler. Restart with 'r' next to 2. Work out that it's (/
+1 0). 
+
+Now modify factorial to be:
+
+(defun factorial (n)
+ "Calculates n!"
+  (if (= n 0)
+      1
+      (* n (factorial (- n 1)))))
+
+So to recap: we've nearly stacked, nose is inches away from concrete
+and we've rewound history to remove the rock that tripped us up - we
+get the correct value without anyone knowing there was ever a crisis.
+
+** Recompiling an object
+
+Compile the point object
+
+In the repl, run:
+
+(find-class 'point)
+
+On the name, run C-c C-v TAB. This brings up all sorts of information
+about our new shiny class. 
+
+The main thing to note is that it is defined in terms of x and y.
+
+Make an instance:
+
+(defparameter *location* (make-instance 'point :x 100 :y 100))
+
+Suppose we are running this code and we can see it's much too slow to
+use Cartesian co-ords.
+
+(debug)
+
+Go to source and uncomment to get 
+
+1. This tells Lisp how to translate an existing object from the old (x y)
+world into the new (rho theta) world.
+
+(defmethod update-instance-for-redefined-class :before
+     ((pos point) added deleted plist &key)
+  (let ((x (getf plist 'x))
+        (y (getf plist 'y)))
+    (setf (point-rho pos) (sqrt (+ (* x x) (* y y)))
+          (point-theta pos) (atan y x))))
+
+2. This is a new definition of the class in (rho theta)
+
+(defclass point ()
+  ((rho :initarg :rho :initform 0 :accessor point-rho)
+   (theta :initarg :theta :initform 0 :accessor point-theta)))
+
+Now go to the REPL and quit the debugger
+
+Evaluate *location*, C-c C-v TAB to see its slots. It's no longer in
+terms of x and y. So not only have we recompiled the class, we've
+re-instantiated any existing objects.
+
+Who would think to have a function like
+update-instance-for-redefined-class? It's a different worldview:
+carpentry vs teaching. 
+
+This feature can't be patched on: it speaks to the deep design of the
+language and the level to which it was battle tested over 36 yrs (27
+yrs ago).
+
+** Optimisation - Time
+
+(time form) times things 
+
+** Optimisation - Deterministic Profiling
+
+Uncomment the part of bm.lisp that has 
+
+(profile uniform box-muller box-mullers gbm-step gbm rough-integrate discounted-payoff
+ 	 get-several-payoffs simulate-call-price)
+
+(report)
+
+Evaluate the first form, then comment it and compile the whole
+file. It takes much longer so explain that:
+
+Counting all the function calls, how long they take to return and how
+much memory they use.
+
+Back when memory was precious, optimisation also meant in space. 
+
+** Optimisation - Probabilistic Profiling
+
+Uncomment the bit 
+
+(require :sb-prof)
+
+(sb-sprof:with-profiling (:report :flat)
+  (run-second-example))
+
+It's randomly sampling the call stack to see what functions are being
+called, then ordering by which ones it saw the most.
+
+It can see really low level function calls.
+
+** Optimisation - Type Declarations
+
+Very briefly, Common Lisp is dynamically typed. But you can add typing
+information. 
+
+The first one is of size X in bytes as seen by C-c M-d.
+
+Add type declarations to the arguments and it gets smaller as seen by
+C-c M-d.
+
+You can add type declarations to the results of functions. This means
+it won't take 42.0 for instance.
+
+* Macros
+
+Macros are the killer app of Common Lisp.
+
+I haven't experienced that myself as yet.
+
+Notes are in the code
+
+
+* 
