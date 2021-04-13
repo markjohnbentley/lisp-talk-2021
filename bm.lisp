@@ -38,9 +38,9 @@
 (defun gbm (r sigma maturity steps S &optional (i 0) (path nil) (Z nil) (dt nil))
   "Simulates a path of Geometric Brownian Motion"
   (cond ((= i steps) (reverse path))
-	((null path) (let* ((dt (/ maturity steps))
+	((null path) (let* ((dt (float (/ maturity steps)))
 			    (Z (box-mullers steps))
-			    (step (gbm-step r sigma dt S (nth i Z))))
+			    (step (gbm-step r sigma dt (float S) (nth i Z))))
 		       (gbm r sigma maturity steps step (1+ i) (push step path) Z dt)))
 	(T (let ((step (gbm-step r sigma dt S (nth i Z))))
 	     (gbm r sigma maturity steps step (1+ i) (push step path) Z dt)))))
@@ -212,6 +212,10 @@
 	(play cymbals mallet)
 	(play snare mallet)))
 
+;;; Simple profiling
+
+(time (run-second-example))
+
 ;;; Deterministic profiling
 
 ;; (profile uniform box-muller box-mullers gbm-step gbm rough-integrate discounted-payoff
@@ -222,29 +226,23 @@
 ;;; Statistical profiling
 
 ;; (require :sb-sprof)
+
 ;; (sb-sprof:with-profiling (:report :flat)
 ;;   (run-second-example))
 
 ;;; Type declarations
 
-;; (defun gbm-step (r sigma dt S Z)
-;;   "Returns an increment of GBM"
-;;   (* S
-;;      (exp (+ (* (- r (* 0.5 sigma sigma)) dt)
-;; 	     (* sigma (sqrt dt) Z)))))
+;; (defun poly (a b x)
+;;   (+ (* a (expt x 2))
+;;      (* b x)))
 
+;; (defun poly (a b x)
+;;   (declare (fixnum a b x))
+;;   (+ (* a (expt x 2))
+;;      (* b x)))
 
-   
+;; (defun poly (a b x)
+;;   (declare (fixnum a b x))
+;;   (the fixnum (+ (the fixnum (* a (the fixnum (expt x 2))))
+;; 		 (the fixnum (* b x)))))
 
-
-
-
-
-
-
-
-
-
-  
-  
-  
