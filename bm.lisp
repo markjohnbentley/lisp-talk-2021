@@ -112,7 +112,7 @@
 
 (defun calculate-average (x)
   "Calculates average"  
-  (save-numbers x "blerg.csv")
+  ;; (save-numbers x "blerg.csv")
   (float (/ (apply #'+ x)
 	    (length x))))
 
@@ -129,19 +129,24 @@
   (let* ((payoffs (get-several-payoffs option number-of-paths steps)))
     (calculate-average payoffs)))
 
-(let* ((S-0 20)
-       (r 0.01)
-       (K 15)
-       (sigma 0.2)
-       (maturity 5)
-       (call (make-instance 'european-call :risk-free r
-					   :strike K
-					   :S-0 S-0
-					   :sigma sigma
-					   :maturity maturity))
-       (simulated (simulate-call-price call 10000 100))
-       (exact (black-scholes-call S-0 r sigma maturity K)))
-  (format t "Simulated is ~a, exact is ~a ~%" simulated exact))
+;;; Now to test it
+
+(defun run-example ()
+  (let* ((S-0 20)
+	 (r 0.01)
+	 (K 15)
+	 (sigma 0.2)
+	 (maturity 5)
+	 (call (make-instance 'european-call :risk-free r
+					     :strike K
+					     :S-0 S-0
+					     :sigma sigma
+					     :maturity maturity))
+	 (simulated (simulate-call-price call 20000 100))
+	 (exact (black-scholes-call S-0 r sigma maturity K)))
+    (format t "Simulated is ~a, exact is ~a ~%" simulated exact)))
+
+(run-example)
   
 ;;; Methods for a digital no-touch type option
 
@@ -159,30 +164,27 @@
       (* (if (and stays-above stays-below) 1 0)
 	 (call-next-method))))) ; This is the key bit
 
-(let* ((S-0 20)
-       (r 0.01)
-       (K 15)
-       (sigma 0.2)
-       (maturity 5)
-       (lower 10.0)
-       (upper 30.0)
-       (call (make-instance 'european-call :risk-free r
-					   :strike K
-					   :S-0 S-0
-					   :sigma sigma
-					   :maturity maturity))
-       (simulated-call (simulate-call-price call 10000 100))       
-       (exact (black-scholes-call S-0 r sigma maturity K))
-       (no-touch-call (make-instance 'no-touch-call :risk-free r
-						    :strike K
-						    :S-0 S-0
-						    :sigma sigma
-						    :maturity maturity
-						    :lower lower
-						    :upper upper))
-       (simulated-no-touch-call (simulate-call-price no-touch-call 10000 100)))
-  (format t "Call: Simulated is ~a, exact is ~a ~%" simulated-call exact)
-  (format t "No Touch Call: Simulated is ~a ~%" simulated-no-touch-call))
+(defun run-second-example ()
+  (let* ((S-0 20)
+	 (r 0.01)
+	 (K 15)
+	 (sigma 0.2)
+	 (maturity 5)
+	 (lower 10.0)
+	 (upper 30.0)
+	 (exact (black-scholes-call S-0 r sigma maturity K))
+	 (no-touch-call (make-instance 'no-touch-call :risk-free r
+						      :strike K
+						      :S-0 S-0
+						      :sigma sigma
+						      :maturity maturity
+						      :lower lower
+						      :upper upper))
+	 (simulated-no-touch-call (simulate-call-price no-touch-call 10000 100)))
+    (format t "Call: Exact is ~a ~%" exact)
+    (format t "No Touch Call: Simulated is ~a ~%" simulated-no-touch-call)))
+
+(run-second-example)
 
 ;;; multimethods: basic idea
 
@@ -196,23 +198,40 @@
 
 (defgeneric play (drum drumstick))
 
-(defmethod play ((drum snare) (drumstick wooden-drumstick)) "Rata-tat-tat")
-(defmethod play ((drum snare) (drumstick mallet)) "I think I broke it")
-(defmethod play ((drum cymbals) (drumstick wooden-drumstick)) "tssss")
-(defmethod play ((drum cymbals) (drumstick mallet)) "TSSSS")
+(defmethod play ((drum snare) (drumstick wooden-drumstick)) (format t "~s ~%" "Rata-tat-tat"))
+(defmethod play ((drum snare) (drumstick mallet)) (format t "~a ~%" "I think I broke it"))
+(defmethod play ((drum cymbals) (drumstick wooden-drumstick)) (format t "~a ~%" "tssss"))
+(defmethod play ((drum cymbals) (drumstick mallet)) (format t "~a ~%" "TSSSS"))
 
 (let ((snare (make-instance 'snare))
       (cymbals (make-instance 'cymbals))
       (wooden-drumstick (make-instance 'wooden-drumstick))
       (mallet (make-instance 'mallet)))
   (list (play snare wooden-drumstick)
-	(play snare mallet)
 	(play cymbals wooden-drumstick)
-	(play cymbals mallet)))
+	(play cymbals mallet)
+	(play snare mallet)))
 
+;;; Deterministic profiling
 
+;; (profile uniform box-muller box-mullers gbm-step gbm rough-integrate discounted-payoff
+;; 	 get-several-payoffs simulate-call-price)
 
+;; (report)
 
+;;; Statistical profiling
+
+;; (require :sb-sprof)
+;; (sb-sprof:with-profiling (:report :flat)
+;;   (run-second-example))
+
+;;; Type declarations
+
+;; (defun gbm-step (r sigma dt S Z)
+;;   "Returns an increment of GBM"
+;;   (* S
+;;      (exp (+ (* (- r (* 0.5 sigma sigma)) dt)
+;; 	     (* sigma (sqrt dt) Z)))))
 
 
    
