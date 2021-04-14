@@ -234,7 +234,21 @@ What does everything is a class mean?
 
 M-. on built-in-class and then defclass
 
-****NEED MORE NOTES****
+Go through functions briefly:
+
+C-<up/down-arrow> navigates through expressions
+
+Dwell a little on rough-integrate to show it works
+
+Then the generic function: it's a virtual function
+
+The classes are simple: they just hold named data
+
+(Talk to the code)
+
+How do we inherit? That's what the second example does.
+
+Scratching the surface: multimethods avoid the "Visitor Pattern"
 
 * Nifty Tricks
 

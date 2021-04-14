@@ -224,7 +224,7 @@
 ;;; Deterministic profiling
 
 ;; (profile uniform box-muller box-mullers gbm-step gbm rough-integrate discounted-payoff
-;; 	 get-several-payoffs simulate-call-price)
+;; 	 get-several-discounted-payoffs simulate-call-price)
 
 ;; (report)
 
@@ -233,7 +233,7 @@
 ;; (require :sb-sprof)
 
 ;; (sb-sprof:with-profiling (:report :flat)
-;;   (run-second-example))
+;;    (run-second-example))
 
 ;;; Type declarations
 
