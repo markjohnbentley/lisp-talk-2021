@@ -1,4 +1,4 @@
-;;;; Looking at mixins in the context of a European Barrier Option
+;;;; Looking at CLOS in the context of a European Barrier Option
 ;;;;
 ;;;; Mark Bentley, 2021
 
@@ -6,8 +6,11 @@
 
 (defun uniform (&optional (N 1e9))
   "Gives approximate U(0,1) random variate"
-  (/ (random N)
-     N))
+  (let ((u (/ (random N)
+	      N)))
+    (if (> u 0)
+	u
+	(uniform N))))
 
 (defun box-muller ()
   "Returns an independent pair of N(0,1)'s"
@@ -85,7 +88,7 @@
 (defgeneric discounted-payoff (option path)
   (:documentation "Returns a payoff"))
 
-;;; A class representing an option and a European option
+;;; A class representing an option 
 
 (defclass option ()
   ((risk-free
@@ -96,6 +99,8 @@
     :initarg :S-0)
    (sigma
     :initarg :sigma)))
+
+;; A class representing a european option
 
 (defclass european-call (option)
   ((strike
@@ -116,18 +121,18 @@
   (float (/ (apply #'+ x)
 	    (length x))))
 
-(defun get-several-payoffs (option number-of-paths steps)
+(defun get-several-discounted-payoffs (option number-of-paths steps)
   "Get several paths"
   (with-slots (risk-free maturity sigma S-0) option
-    (let ((payoffs (loop for m from 1 to number-of-paths
-			 collecting
-			 (discounted-payoff option (gbm risk-free sigma maturity steps S-0)))))
-      payoffs)))
+    (let ((discounted-payoffs (loop for m from 1 to number-of-paths
+				    collecting
+				    (discounted-payoff option (gbm risk-free sigma maturity steps S-0)))))
+      discounted-payoffs)))
 
 (defun simulate-call-price (option number-of-paths steps)
   "Simulates a bunch of paths, then finds the discounted payoff. "
-  (let* ((payoffs (get-several-payoffs option number-of-paths steps)))
-    (calculate-average payoffs)))
+  (let* ((discounted-payoffs (get-several-discounted-payoffs option number-of-paths steps)))
+    (calculate-average discounted-payoffs)))
 
 ;;; Now to test it
 
@@ -170,8 +175,8 @@
 	 (K 15)
 	 (sigma 0.2)
 	 (maturity 5)
-	 (lower 10.0)
-	 (upper 30.0)
+	 (lower 15.0)
+	 (upper 25.0)
 	 (exact (black-scholes-call S-0 r sigma maturity K))
 	 (no-touch-call (make-instance 'no-touch-call :risk-free r
 						      :strike K
